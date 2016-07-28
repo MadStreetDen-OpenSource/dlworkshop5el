@@ -73,7 +73,7 @@ def run():
     # batch_size = batch size for SGD
     # test_iter = no. of epochs to test after
     t0 = time.time()
-    nn.fit(X_train, y_train, X_test, y_test, learning_rate=0.001, max_iter=50, batch_size=100, test_iter=10, cnn=False)
+    nn.fit(X_train, y_train, X_test, y_test, learning_rate=0.001, max_iter=25, batch_size=100, test_iter=10, cnn=False)
     t1 = time.time()
     print('Training Duration: %.1fs' % (t1-t0))
 
