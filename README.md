@@ -9,35 +9,45 @@ Modules included:
 2. Restricted Boltzmann Machine
 
 ## Build
+A small part of the code is in Cython, which requires a build. 
+Use the relevant way to install dependencies and build the code.
 
-Steps to run programs
-Option 1(both OS X and linux):
+For windows users, you will need to install Cython with MingGW or Visual C++ in order to build the code (option 1). 
+See https://github.com/cython/cython/wiki/InstallingOnWindows for Cython installation on windows. 
+
+Alternately, a vagrant linux VM (option 3) has been included here, which can be run using virtualbox.
+
+Option 1 (Using a virtualenv and pip to install dependencies):
 
     pip install virtualenv
-    git clone the repository using the command git clone 
-    cd into the repository
+    pip install --upgrade pip
+    git clone https://github.com/MadStreetDen-OpenSource/dlworkshop5el.git 
+    cd dlworkshop5el
     virtualenv dlw
     source dlw/bin/activate
     pip install -r requirements.txt
     python setup.py build
 
-Option 2(linux):
+Option 2 (Using apt-get to install dependencies - Linux):
 
     sudo apt-get install python-dev
     sudo apt-get install python-numpy
     sudo apt-get install cython
     sudo apt-get install python-scipy
     sudo apt-get install python-matplotlib
+    sudo apt-get install python-sklearn
+    sudo apt-get install python-setuptools
+    
     python setup.py build
 
-Option 3(Vagrant Virtual Machine), (Recommended for people having Windoze machines):
-Disable secure boot. And enable Virtualization in Boot Setup
+Option 3(Vagrant Virtual Machine), (Recommended for people having Windows machines):
+Disable secure boot. And enable Virtualization in Boot Setup.
 
-1. Get an image of vagrant from the vagrant website.
-2. Install a virtualization tool. virtualbox is recommended.
-3. change your Currrent working directory to the clone repository
-4. Run command $vagrant up
-5. Run command $python setup.py build
+    1. Get an image of vagrant from the vagrant website.
+    2. Install a virtualization tool. virtualbox is recommended.
+    3. Clone repository and cd into dlworkshop5el
+    4. Run command $ vagrant up
+    5. Run command $ python setup.py build
 
 This should create build folder in the root folder.
 
