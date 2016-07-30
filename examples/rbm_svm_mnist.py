@@ -33,6 +33,8 @@ import sys
 import time
 import random
 from sklearn import svm
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from data_utils import load_data_mnist
