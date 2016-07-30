@@ -53,7 +53,9 @@ Disable secure boot. And enable Virtualization in Boot Setup.
     9. Run command $ cd /vagrant
     5. Run command $ python setup.py build
 
-This should create build folder in the root folder.
+This should create build folder in the root folder. 
+
+Tip: To get your mouse pointer back after clicking on virtualbox window press Right ctrl key.
 
 ## Examples
 
