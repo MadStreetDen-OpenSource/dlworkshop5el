@@ -47,6 +47,10 @@ Disable secure boot. And enable Virtualization in Boot Setup.
     2. Install a virtualization tool. virtualbox is recommended.
     3. Clone repository and cd into dlworkshop5el
     4. Run command $ vagrant up
+    6. Open virtualbox. You can see the a new virtual machine running.
+    7. Click on that virtual machine and on the top click show.
+    8. A new screen will pop up. Login into it using useraname: vagrant and password vagrant.
+    9. Run command $ cd /vagrant
     5. Run command $ python setup.py build
 
 This should create build folder in the root folder.
