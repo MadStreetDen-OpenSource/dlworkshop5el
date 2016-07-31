@@ -288,7 +288,10 @@ class NeuralNetwork:
             data = np.tile(data,3)
         ax = self.filter.add_subplot(111)
         ax.imshow(data, cmap=plt.get_cmap('jet'))
-        # self.filter.savefig('weights_'+str(iter)+'.png')
+        path_to_save = os.path.join(os.path.curdir, 'Result', 'cnn_mnist')
+        if not os.path.exists(path_to_save):
+            os.makedirs(path_to_save)
+        self.filter.savefig(os.path.join(path_to_save,('weights_'+str(iter)+'.png')))
         plt.draw()
         plt.show(block=False)
         
@@ -316,6 +319,11 @@ class NeuralNetwork:
         self.filter.clf()
         ax = self.filter.add_subplot(1,1,1)
         ax.imshow(W, vmin=-lim, vmax=lim, cmap=plt.get_cmap('gray'))
-        self.filter.savefig('weights_' + str(iter_num) + '.png')
+        path_to_save = os.path.join(os.path.curdir, 'Result', 'fc_mnist')
+        if not os.path.exists(path_to_save):
+            os.makedirs(path_to_save)
+        self.filter.savefig(os.path.join(path_to_save,('weights_' +
+                                                       str(iter_num) +
+                                                       '.png')))
         plt.draw()
         plt.show(block=False)
