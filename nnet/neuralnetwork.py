@@ -4,7 +4,7 @@ from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 from .layers import ParamMixin
 from .helpers import one_hot, unhot
-
+import os
 class NeuralNetwork:
     """
     A neural network class that allows definition and training of a
@@ -210,7 +210,32 @@ class NeuralNetwork:
                     err = sp.optimize.check_grad(fun, grad_fun, param_init)
                     print('diff %.2e' % err)
 
-    def call_plot(self, blockFig=False):
+    # def call_plot(self, blockFig=False):
+        # """
+          # Plots the error curves and the test confusion matrix.
+        # """
+        # self.fig_confmat.clf()
+        # ax_loss = self.fig_loss.add_subplot(1,1,1)
+        # ax_confmat = self.fig_confmat.add_subplot(1,1,1)
+        # ax_loss.plot([i[0] for i in self.tr_error], [i[1] for i in self.tr_error], 'r')
+        # ax_loss.plot([i[0] for i in self.te_error], [i[1] for i in self.te_error], 'b')
+        # cm = self.conf_mat
+        # if cm is not None:
+            # cm1 = np.asarray(cm).astype(np.float)
+            # for i,r in enumerate(cm1):
+                # cm1[i,:] = (cm1[i,:]/cm1[i,:].sum())*100.0
+            
+            # cax = ax_confmat.matshow(cm)
+            # self.fig_confmat.colorbar(cax)
+            # ax_confmat.set_title('Test Confusion matrix')
+            # ax_confmat.set_ylabel('True label')
+            # ax_confmat.set_xlabel('Predicted label')
+            # plt.draw()
+            # if blockFig:
+                # plt.show(block=True)
+            # else:
+    #             plt.show(block=False)
+    def call_plot(self, blockFig=False, save_folder = None):
         """
           Plots the error curves and the test confusion matrix.
         """
@@ -232,9 +257,16 @@ class NeuralNetwork:
             ax_confmat.set_xlabel('Predicted label')
             plt.draw()
             if blockFig:
+                path_to_save = os.path.join(os.path.curdir,
+                                            'Result',save_folder) 
+                if not os.path.exists(path_to_save):
+                    os.makedirs(path_to_save)
+                self.fig_loss.savefig(os.path.join(path_to_save, 'loss.png'))
+                self.fig_confmat.savefig(os.path.join(path_to_save,'confusion_matrix.png'))
                 plt.show(block=True)
             else:
                 plt.show(block=False)
+
             
     def vis_square(self, data, iter, padsize=1, padval=0):
         """

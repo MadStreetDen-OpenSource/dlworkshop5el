@@ -5,8 +5,12 @@ import sys
 import os
 import time
 import numpy as np
-import matplotlib 
-matplotlib.use('Agg')
+import matplotlib
+# either of the two lines should be uncommented
+# matplotlib.use('Agg') # uncomment this if you are using the VM, gives text
+                        # ouptut only
+# matplotlib.use('TkAgg') # uncomment this if you are using installed version
+                          #gives visual output
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__),'..'))
@@ -83,7 +87,7 @@ def run():
     print('Test error rate: %.4f' % error)
 
     # Plot loss curve
-    nn.call_plot(blockFig=True)
+    nn.call_plot(blockFig=True, save_folder = 'cnn_mnist')
 
     # Classify 10 random images from the test set
     idx = np.random.permutation(X_test.shape[0])[:10]
@@ -91,6 +95,6 @@ def run():
         print nn.predict(X_test[i].reshape(1,1,28,28))
         plt.figure(); plt.imshow(X_test[i].reshape(28,28)); plt.show()
 
-    
+
 if __name__ == '__main__':
     run()

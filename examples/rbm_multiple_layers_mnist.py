@@ -33,10 +33,14 @@ import sys
 import time
 import random
 import matplotlib
-matplotlib.use('Agg')
+# matplotlib.use('Agg') # uncomment this if you are using the VM, gives text
+                        # ouptut only
+# matplotlib.use('TkAgg') # uncomment this if you are using installed version
+                          #gives visual output
 import matplotlib.pyplot as plt
 import numpy as np
 from data_utils import load_data_mnist
+import os
 
 class RBM(object):
     """
@@ -243,7 +247,7 @@ class CDTrainer(object):
 
         mse = np.zeros(epochs)
         col = np.array([np.random.rand(),np.random.rand(),np.random.rand()])
-        
+
         for epoch in xrange(epochs):
 
             # An epoch is a single pass through the training data.
@@ -255,7 +259,7 @@ class CDTrainer(object):
             # indication of whether things are moving in the right way.
 
             # mse = 0
-            
+
             # Compute the summed visible activities once
             # ctr = 0
             for offset in xrange(0, ncases, minibatch):
@@ -328,29 +332,34 @@ class CDTrainer(object):
                 # Add to the total epoch estimate.
                 # mse += vis.sum() / ncases
                 mse[epoch] += vis.sum() / ncases
-                
+
             # Saving and displaying weights for the first layer
             if model.weights.shape[0]==784 and epoch%1==0:
                 self.plot_rf(model.weights)
-                
+
             plt.figure(1)
-            plt.plot(mse[:epoch+1], color=col)  
+            plt.plot(mse[:epoch+1], color=col)
             plt.xlabel('Number of epochs')
-            plt.ylabel('MSE')  
+            plt.ylabel('MSE')
+            path_to_save = os.path.join(os.path.curdir, 'Result',
+                                        'rbm_multiple_layers')
+            if not os.path.exists(path_to_save):
+                os.makedirs(path_to_save)
+            plt.savefig(os.path.join(path_to_save,'rbm_plot.png'))
             plt.draw()
-            
+
             print "Done epoch %d: %f seconds, MSE=%f" % \
                     (epoch + 1, time.clock() - epoch_start, mse[epoch])
             sys.stdout.flush()
-    
+
     def plot_rf(self,w1,lim=1.0):
         w = w1.T
-        
+
         N1 = int(np.sqrt(w.shape[1]))   # sqrt(784) = 28, you have 28x28 RFs
         N2 = int(np.ceil(np.sqrt(w.shape[0])))  # sqrt(256) = 16, you have 16x16 output cells
-        
+
         W = np.zeros((N1*N2,N1*N2))             # You are creating a weight wall of 16x16 RF blocks
-        
+
         for j in range(w.shape[0]):
             r = int(j/N2)
             c = int(j%N2)
@@ -361,9 +370,14 @@ class CDTrainer(object):
         plt.figure(2)
         plt.title('Weights between first and second layer')
         plt.imshow(W, vmin=-lim, vmax=lim)
+        path_to_save = os.path.join(os.path.curdir, 'Result',
+                                    'rbm_multiple_layers')
+        if not os.path.exists(path_to_save):
+            os.makedirs(path_to_save)
+        plt.savefig(os.path.join(path_to_save, 'rf_fields.png'))
         plt.show()
-                
-    
+
+
 def reconstruct(ipData,rbm_stack):
     """
     This function takes an input image and returns a reconstructed image using the RBM weights
@@ -372,7 +386,7 @@ def reconstruct(ipData,rbm_stack):
     # obtaining the feature vector representing the input image
     for rbm in rbm_stack:
         W1 = rbm.weights
-        H1 = rbm.hidbias        
+        H1 = rbm.hidbias
         x1 = np.array((np.matrix(W1.T)*np.matrix(x1.T)).T) + H1
         # sigmoid activation function
         x1 = 1/(1+np.exp(-x1))
@@ -384,7 +398,7 @@ def reconstruct(ipData,rbm_stack):
         x1 = np.array((np.matrix(W1)*np.matrix(x1.T)).T) + V1
         # sigmoid activation function
         x1 = 1/(1+np.exp(-x1))
-    
+
     return x1
 
 def get_data(data1, target1, nClasses, nS):
@@ -394,9 +408,9 @@ def get_data(data1, target1, nClasses, nS):
     nS = number of samples used for training per class
     """
     ipDim = data1.shape[1]
-    
+
     data = np.zeros((nClasses*nS,ipDim))
-    
+
     for i in range(nClasses):
         idx1 = [i1 for i1, x in enumerate(target1) if x == i]
         idx = random.sample(idx1,nS)
@@ -404,32 +418,32 @@ def get_data(data1, target1, nClasses, nS):
 
     np.random.shuffle(data)
     return data
-  
+
 """
-- The code trains a specified number of RBM layers. 
-- The numbmer of layers and number of nodes in each layers can be changed by the user. 
-- While training, a figure is displayed which shows the change in the Mean Square Error (MSE) between the training samples and the reconstructed samples vs number of epochs. 
+- The code trains a specified number of RBM layers.
+- The numbmer of layers and number of nodes in each layers can be changed by the user.
+- While training, a figure is displayed which shows the change in the Mean Square Error (MSE) between the training samples and the reconstructed samples vs number of epochs.
 - At the end of training, a few examples of the input image and the reconstructed image are displayed.
 - In addition to changing the architecture of the network, the number of epochs and the number of training samples can also be changed.
-"""      
+"""
 
 if __name__=='__main__':
     data1, target1 = load_data_mnist()
     split = 60000
     opDim = 32 # dimension of output feature vector
     ipDim = data1.shape[1] # size of each input image
-    nClasses = np.unique(target1).size # This should be less than or equal to 10 - MNIST dataset    
+    nClasses = np.unique(target1).size # This should be less than or equal to 10 - MNIST dataset
     nS = 5000 # no. of samples per class for training
     nNodes = [ipDim, 256, 64, opDim] # No. of nodes in each layer of the network in the specified order
     nEpochs = 50 # Maximum number of epochs for training each layer
-    
+
     if nClasses<=0:
         print 'Number of classes should be a positive number. Check nClasses in the code.'
         quit()
-    
+
     train_data = get_data(data1[:split],target1[:split],nClasses,nS) # Get training data
     rbm_stack = [] # list of rbm layers
-    
+
     # training the RBM layers one by one
     plt.ion()
     plt.show()
@@ -439,21 +453,21 @@ if __name__=='__main__':
         rbm1.params[:] = np.random.uniform(-1./20, 1./20, len(rbm1.params))
         trainer = CDTrainer(rbm1)
         trainer.train(data0, nEpochs, minibatch=100)
-        W1 = rbm1.weights        
+        W1 = rbm1.weights
         V1 = rbm1.visbias
         H1 = rbm1.hidbias
         data0 = np.array((np.matrix(W1.T)*np.matrix(data0.T)).T) + H1
-        
+
         # sigmoid activation function
         data0 = 1/(1+np.exp(-data0))
-        
+
         rbm_stack.append(rbm1)
-    
-    # Get testing data    
-    nExamples = 20 # No. of examples to be displayed in the end   
+
+    # Get testing data
+    nExamples = 20 # No. of examples to be displayed in the end
     test_data = get_data(data1[split:],target1[split:],nClasses,nExamples)
     n = int(np.ceil(np.sqrt(test_data.shape[1])))
-        
+
     # Display the reconstruction output for some sample inputs
     plt.figure()
     A = plt.subplot(121,title='Input data')
@@ -463,10 +477,10 @@ if __name__=='__main__':
         opData = reconstruct(np.reshape(ipData,(1,test_data.shape[1])),rbm_stack)
         I = np.reshape(ipData,(n,n))
         O = np.reshape(opData,(n,n))
-        
+
         A.imshow(I,cmap='Greys_r')
         B.imshow(O,cmap='Greys_r')
         plt.draw()
         time.sleep(2)
-    
+
     plt.close('all')

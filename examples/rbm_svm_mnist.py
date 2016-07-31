@@ -34,10 +34,14 @@ import time
 import random
 from sklearn import svm
 import matplotlib
-matplotlib.use('Agg')
+# matplotlib.use('Agg') # uncomment this if you are using the VM, gives text
+                        # ouptut only
+# matplotlib.use('TkAgg') # uncomment this if you are using installed version
+                          #gives visual output
 import matplotlib.pyplot as plt
 import numpy as np
 from data_utils import load_data_mnist
+import os
 
 class RBM(object):
     """
@@ -246,7 +250,7 @@ class CDTrainer(object):
 
         mse = np.zeros(epochs)
         col = np.array([np.random.rand(),np.random.rand(),np.random.rand()])
-        
+
         for epoch in xrange(epochs):
 
             # An epoch is a single pass through the training data.
@@ -328,29 +332,34 @@ class CDTrainer(object):
 
                 # Add to the total epoch estimate.
                 mse[epoch] += vis.sum() / ncases
-                
+
             # Saving and displaying weights for the first layer
             if model.weights.shape[0]==784 and epoch%1==0:
                 self.plot_rf(model.weights)
-                
+
             plt.figure(1)
-            plt.plot(mse[:epoch+1], color=col)  
+            plt.plot(mse[:epoch+1], color=col)
             plt.xlabel('Number of epochs')
-            plt.ylabel('MSE')  
+            plt.ylabel('MSE')
+            path_to_save = os.path.join(os.path.curdir, 'Result',
+                                        'rbm_svm')
+            if not os.path.exists(path_to_save):
+                os.makedirs(path_to_save)
+            plt.savefig(os.path.join(path_to_save, 'rbm_loss.png'))
             plt.draw()
-                
+
             print "Done epoch %d: %f seconds, MSE=%f" % \
                     (epoch + 1, time.clock() - epoch_start, mse[epoch])
             sys.stdout.flush()
-    
+
     def plot_rf(self,w1,lim=1.0):
         w = w1.T
-        
+
         N1 = int(np.sqrt(w.shape[1]))   # sqrt(784) = 28, you have 28x28 RFs
         N2 = int(np.ceil(np.sqrt(w.shape[0])))  # sqrt(256) = 16, you have 16x16 output cells
-        
+
         W = np.zeros((N1*N2,N1*N2))             # You are creating a weight wall of 16x16 RF blocks
-        
+
         for j in range(w.shape[0]):
             r = int(j/N2)
             c = int(j%N2)
@@ -361,8 +370,13 @@ class CDTrainer(object):
         plt.figure(2)
         plt.title('Weights between first and second layer')
         plt.imshow(W, vmin=-lim, vmax=lim)
+        path_to_save = os.path.join(os.path.curdir, 'Result',
+                                    'rbm_multiple_layers')
+        if not os.path.exists(path_to_save):
+            os.makedirs(path_to_save)
+        plt.savefig(os.path.join(path_to_save, 'rf_fields.png'))
         plt.show()
-                        
+
 
 def get_vector(ipData,rbm_stack):
     """
@@ -373,12 +387,12 @@ def get_vector(ipData,rbm_stack):
         W1 = rbm.weights
         V1 = rbm.visbias
         H1 = rbm.hidbias
-        
+
         x1 = np.array((np.matrix(W1.T)*np.matrix(x1.T)).T) + H1
-        
+
         # sigmoid activation function
         x1 = 1/(1+np.exp(-x1))
-        
+
     return x1
 
 
@@ -389,10 +403,10 @@ def get_data(data1, target1, nClasses, nS):
     nS = number of samples used for training per class
     """
     ipDim = data1.shape[1]
-    
+
     data = np.zeros((nClasses*nS,ipDim))
     target = np.zeros((nClasses*nS))
-    
+
     for i in range(nClasses):
         idx1 = [i1 for i1, x in enumerate(target1) if x == i]
         idx = random.sample(idx1,nS)
@@ -401,10 +415,10 @@ def get_data(data1, target1, nClasses, nS):
 
     A = np.array(range(len(data)))
     np.random.shuffle(A)
-    
+
     op_data = data[A]
     op_target = target[A]
-    
+
     return op_data, op_target
 
 """
@@ -412,26 +426,26 @@ def get_data(data1, target1, nClasses, nS):
 - The number of hidden layers can be set by the user below. The user can also decide the number of epochs, the number of samples to be used to train the RBM layers and the SVM classifier.
 - After the training, a few example images are displayed and the respective predictions are printed.
 """
-        
+
 if __name__=='__main__':
     data1, target1 = load_data_mnist()
-    split = 60000 
+    split = 60000
     opDim = 32 # dimension of output feature vector
     ipDim = data1.shape[1] # size of each input image
-    nClasses = np.unique(target1).size # This should be less than or equal to 10 - MNIST dataset 
-    nS = 5000 # no. of samples per class for training    
+    nClasses = np.unique(target1).size # This should be less than or equal to 10 - MNIST dataset
+    nS = 5000 # no. of samples per class for training
     nVectors = 200 # No. of samples per class for training SVM classifier
-    
+
     X = np.zeros((nVectors*nClasses,opDim)) # Initializing the input vector and output label pair for classifier training
     Y = np.zeros((nVectors*nClasses))
     n = int(np.ceil(np.sqrt(ipDim)))
-    
+
     nNodes = [ipDim,256,64,opDim] # No. of nodes in each layer of the network in the specified order
     nEpochs = 50 # Maximum number of epochs for training each layer
-    
+
     rbm_train_data, _ = get_data(data1[:split], target1[:split], nClasses, nS) # Get training data
     rbm_stack = [] # list of rbm layers
-    
+
     # training the RBM layers one by one
     plt.ion()
     plt.show()
@@ -445,45 +459,45 @@ if __name__=='__main__':
         V1 = rbm1.visbias
         H1 = rbm1.hidbias
         data0 = np.array((np.matrix(W1.T)*np.matrix(data0.T)).T) + H1
-        
+
         # sigmoid activation function
         data0 = 1/(1+np.exp(-data0))
-        
+
         rbm_stack.append(rbm1)
-    
-    # pair of feature vectors and labels in each class for training the classifier  
-    svm_train_data, svm_train_target = get_data(data1[:split], target1[:split], nClasses, nVectors) 
-    
+
+    # pair of feature vectors and labels in each class for training the classifier
+    svm_train_data, svm_train_target = get_data(data1[:split], target1[:split], nClasses, nVectors)
+
     for i in range(len(svm_train_data)):
         X[i,:] = np.reshape(get_vector(np.reshape(svm_train_data[i,:],(1,svm_train_data.shape[1])),rbm_stack),(1,opDim))
-        
+
     Y = svm_train_target
-    
-    # Train a network that does classification using SVMs     
+
+    # Train a network that does classification using SVMs
     svm_wts = svm.SVC(C=100,kernel='poly',degree=5,gamma=0.001)
     svm_wts.fit(X, Y)
-    
+
     # Display some sample inputs and outputs
     nExamples = 10
     xx = np.zeros((nExamples,opDim))
     ipImg = np.zeros((nExamples,ipDim))
     L = np.zeros((nExamples))
-    
-    ipImg, L = get_data(data1[split:], target1[split:], nClasses, nExamples) 
-    
+
+    ipImg, L = get_data(data1[split:], target1[split:], nClasses, nExamples)
+
     for i in range(nExamples):
         xx[i,:] = np.reshape(get_vector(np.reshape(ipImg[i,:],(1,ipDim)),rbm_stack),(1,opDim))
-        
+
     yy = svm_wts.predict(xx)
-    
+
     plt.figure()
     plt.title('Input data')
-        
+
     for i in range(nExamples):
         print 'ip = ' + str(int(L[i])) + ' and pred = ' + str(int(yy[i]))
-        
+
         plt.imshow(np.reshape(ipImg[i,:],(n,n)),cmap='Greys_r')
         plt.draw()
         time.sleep(2)
-    
+
     plt.close('all')
